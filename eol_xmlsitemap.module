@@ -1,0 +1,146 @@
+<?php
+function eol_xmlsitemap_cron() {
+  $file = "../html/sitemapStatic.xml";
+  $types = array(
+    "testimonial",
+    "press_release",
+  );
+  if (!file_exists($file)) {
+    $file = fopen($file, 'w') or die("can't open file");
+    fclose($file);
+  }
+  eol_xmlsitemap_cron_delete($file);
+  eol_xmlsitemap_cron_add($file,$types);
+}
+
+function eol_xmlsitemap_cron_delete($file) {
+  $doc = new DOMDocument;
+  $doc->preserveWhiteSpace = FALSE;
+  $doc->load($file);
+  $xPath = new DOMXPath($doc);
+  $query = sprintf('//urlset/url[@datasource="xmlsitemap"]');
+  foreach($xPath->query($query) as $node) {
+    $node->parentNode->removeChild($node);
+  }
+  $doc->formatOutput = TRUE;
+  $doc->save($file);
+  return;
+}
+function eol_xmlsitemap_cron_add($file,$types) {
+  if(sizeof($types)<1) return;
+  $doc = new DOMDocument();
+  $doc->load( $file, LIBXML_NOBLANKS);
+  $xpath = new DOMXPath($doc);
+  $doc->formatOutput = true;
+  $root = $doc->documentElement;
+  $subtype_in_clause = " AND subtype IN (";
+  $i=0;
+  foreach($types AS $v) {
+    if($i>0) $subtype_in_clause .= ",";
+    $subtype_in_clause .= "'".$v."'";
+    $i++;
+  }  
+  $subtype_in_clause .= ")";
+  /* id in xmlsitemap is actually nid */
+  $result = db_query("SELECT id,loc,priority FROM {xmlsitemap}  WHERE status = 1 AND access=1");
+  foreach($result as $row) {
+    $url = $doc->createElement("url");
+    $datasource = $doc->createAttribute("datasource");
+    $datasource->value = "xmlsitemap";
+    $url->appendChild($datasource);
+    $xmlsitemap_id = $doc->createAttribute("xmlsitemap_id");
+    $xmlsitemap_id->value = $row->id;
+    $url->appendChild($xmlsitemap_id);
+//    $loc = $doc->createElement("loc","https://".$_SERVER['HTTP_HOST']."/q/".$row->loc);
+    $loc = $doc->createElement("loc",url($row->loc,array('absolute' => TRUE)));
+    $url->appendChild($loc);
+    $priority = $doc->createElement("priority",$row->priority);
+    $url->appendChild($priority);
+    $root->appendChild($url);
+  }
+  $doc->save($file);  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+Deprecated below
+*/
+
+
+
+/**
+ * Implements hook_node_insert().
+ */
+function eol_xmlsitemap_node_insert(stdClass $node) {
+  return;
+/*
+  eol_xmlsitemap_cron();
+  $types = array(
+    "testimonial",
+  );
+  if(!in_array($node->type,$types) || $node->status!=1) return;
+*/
+
+
+/*
+  var_dump($node);
+  exit;
+object(stdClass)#272 (44) { ["uid"]=> string(1) "1" ["name"]=> string(12) "Elance_Admin" ["type"]=> string(11) "testimonial" ["language"]=> string(2) "en" ["title"]=> string(12) "asfddfsafsda" ["status"]=> int(1) ["promote"]=> int(0) ["sticky"]=> int(0) ["created"]=> int(1365990327) ["revision"]=> int(0) ["comment"]=> string(1) "1" ["menu"]=> array(16) { ["enabled"]=> int(0) ["mlid"]=> int(0) ["module"]=> string(4) "menu" ["hidden"]=> int(0) ["has_children"]=> int(0) ["customized"]=> int(1) ["options"]=> array(0) { } ["expanded"]=> int(0) ["parent_depth_limit"]=> int(8) ["link_title"]=> string(0) "" ["description"]=> string(0) "" ["parent"]=> string(11) "main-menu:0" ["weight"]=> string(1) "0" ["language"]=> string(2) "en" ["plid"]=> string(1) "0" ["menu_name"]=> string(9) "main-menu" } ["path"]=> array(5) { ["alias"]=> string(0) "" ["pid"]=> NULL ["source"]=> NULL ["language"]=> string(3) "und" ["pathauto"]=> int(1) } ["nid"]=> string(4) "4014" ["vid"]=> string(4) "5505" ["changed"]=> int(1365990327) ["additional_settings__active_tab"]=> string(9) "edit-menu" ["log"]=> string(0) "" ["date"]=> string(0) "" ["submit"]=> string(4) "Save" ["preview"]=> string(7) "Preview" ["form_build_id"]=> string(48) "form-bl19KSqQlhYJiyQ6ivPsQ9UYZSoUKuHNdZA2kdjq_ao" ["form_token"]=> string(43) "2QtwfCqUbHw-XO9X973gE_PN6xiYa_qf3eaxkSFeYQE" ["form_id"]=> string(21) "testimonial_node_form" ["page_title"]=> string(0) "" ["xmlsitemap"]=> array(6) { ["status"]=> string(1) "1" ["status_default"]=> string(1) "1" ["status_override"]=> int(0) ["priority"]=> string(3) "0.5" ["priority_default"]=> string(3) "0.5" ["priority_override"]=> int(0) } ["op"]=> string(4) "Save" ["body"]=> array(1) { ["en"]=> array(1) { [0]=> array(3) { ["summary"]=> string(0) "" ["value"]=> string(12) "afsdfsdaafsd" ["format"]=> string(13) "documentation" } } } ["field_image"]=> array(1) { ["en"]=> array(0) { } } ["field_section"]=> array(1) { ["en"]=> array(0) { } } ["field_video_url"]=> array(1) { ["und"]=> array(0) { } } ["field_call_out"]=> array(1) { ["und"]=> array(0) { } } ["field_country_code"]=> array(1) { ["und"]=> array(0) { } } ["field_contractor_title"]=> array(1) { ["und"]=> array(0) { } } ["field_business_url"]=> array(1) { ["und"]=> array(0) { } } ["field_headline"]=> array(1) { ["und"]=> array(0) { } } ["field_video_thumbnail"]=> array(1) { ["und"]=> array(0) { } } ["field_weight"]=> array(1) { ["und"]=> array(0) { } } ["field_customer_type"]=> array(1) { ["und"]=> array(0) { } } ["validated"]=> bool(true) ["is_new"]=> bool(true) ["timestamp"]=> int(1365990327) ["tnid"]=> int(0) ["translate"]=> int(0) } 
+*/
+
+  $doc = new DOMDocument();
+  $file = "../html/sitemapStatic.xml";
+  if (!file_exists($file)) {
+    $file = fopen($file, 'w') or die("can't open file");
+    fclose($file);
+  }
+  $doc->load( $file, LIBXML_NOBLANKS);
+  $doc->formatOutput = true;
+  $root = $doc->documentElement;
+  $url = $doc->createElement("url");
+  $nid = $doc->createAttribute("nid");
+  $nid->value = $node->nid;
+  $url->appendChild($nid);
+  $loc = $doc->createElement("loc","https://".$_SERVER['HTTP_HOST']."/q/node/".$node->nid);
+  $url->appendChild($loc);
+  $priority = $doc->createElement("priority",$node->xmlsitemap["priority"]);
+  $url->appendChild($priority);
+
+/*
+
+
+
+// Create and add href to new link element
+$href = $doc->createElement("href","www.anysite.com");
+$link->appendChild($href);
+*/
+  $root->appendChild($url);
+  $doc->save($file);
+
+}
+function eol_xmlsitemap_node_update(stdClass $node) {
+
+}
+function eol_xmlsitemap_node_delete(stdClass $node) {
+
+}
+
+
