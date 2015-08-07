@@ -1,6 +1,0 @@
-name = EOL XML Sitemap
-description = Extends XML Sitemap (xmlsitemap) for updates in https://www.elance.com/sitemapStatic.xml
-core = 7.x
-package = elance
-files[] = eol_xmlsitemap.module
-dependencies[] = xmlsitemap
