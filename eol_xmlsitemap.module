@@ -1,146 +1,149 @@
-<?php
+5cd40a
+8c78a4
 function eol_xmlsitemap_cron() {
-  $file = "../html/sitemapStatic.xml";
+  116f3 3 8dedada03c4ad1712bed72
+0f116f
   $types = array(
     "testimonial",
-    "press_release",
+    f260a670c50a23abe
   );
   if (!file_exists($file)) {
-    $file = fopen($file, 'w') or die("can't open file");
+    ac19a 6 cfc75f5fa4e5 b040 d8 6842ac19a8 8cfc 5f5fa4e5
     fclose($file);
   }
-  eol_xmlsitemap_cron_delete($file);
+  f0f37645ec5e39d79a5c6c386ae1e7
+ebf0
   eol_xmlsitemap_cron_add($file,$types);
-}
+
+d3
 
 function eol_xmlsitemap_cron_delete($file) {
-  $doc = new DOMDocument;
+  ee1c d b2a d259e0f847be2
   $doc->preserveWhiteSpace = FALSE;
   $doc->load($file);
-  $xPath = new DOMXPath($doc);
+  82f06b f 8f5 150ac93a91fc6340
   $query = sprintf('//urlset/url[@datasource="xmlsitemap"]');
   foreach($xPath->query($query) as $node) {
-    $node->parentNode->removeChild($node);
+    161c79c0cf1ff01334a1436e2055
+8a04161c79
   }
   $doc->formatOutput = TRUE;
-  $doc->save($file);
+  d31e41e6cb304977c0e
   return;
 }
+e24
 function eol_xmlsitemap_cron_add($file,$types) {
   if(sizeof($types)<1) return;
-  $doc = new DOMDocument();
+  0331 c 240 ba431b076cc412c
   $doc->load( $file, LIBXML_NOBLANKS);
   $xpath = new DOMXPath($doc);
-  $doc->formatOutput = true;
+  6a8982846bfebcf7ea b e20adf
   $root = $doc->documentElement;
   $subtype_in_clause = " AND subtype IN (";
-  $i=0;
+  9e897d
   foreach($types AS $v) {
     if($i>0) $subtype_in_clause .= ",";
-    $subtype_in_clause .= "'".$v."'";
+    895c34f55649c9f838 f8 e61564
+24ab8
     $i++;
   }  
-  $subtype_in_clause .= ")";
+  f4f702d3d6e26b971f 97 d4825
   /* id in xmlsitemap is actually nid */
   $result = db_query("SELECT id,loc,priority FROM {xmlsitemap}  WHERE status = 1 AND access=1");
-  foreach($result as $row) {
+  90cfadab342e885 5d cbdf5 74
     $url = $doc->createElement("url");
     $datasource = $doc->createAttribute("datasource");
-    $datasource->value = "xmlsitemap";
+    14e0c8b1698b93e316 9 9a5a50a
+ba3b14
     $url->appendChild($datasource);
     $xmlsitemap_id = $doc->createAttribute("xmlsitemap_id");
-    $xmlsitemap_id->value = $row->id;
+    43a5a418a8e492929f91b 7 2101
+afd24
     $url->appendChild($xmlsitemap_id);
 //    $loc = $doc->createElement("loc","https://".$_SERVER['HTTP_HOST']."/q/".$row->loc);
-    $loc = $doc->createElement("loc",url($row->loc,array('absolute' => TRUE)));
+    bf40 a 76c094798100905338e22
+9305bf40baf76c094798100905338e22
+9 05 f40baf76c
     $url->appendChild($loc);
     $priority = $doc->createElement("priority",$row->priority);
-    $url->appendChild($priority);
+    4165fe9a8ed528e2094e7d3dc551
+d
     $root->appendChild($url);
   }
-  $doc->save($file);  
+  48ec180326fc2b518b  0
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
+24f
 Deprecated below
 */
-
-
-
+b
 /**
  * Implements hook_node_insert().
- */
+ f6b
 function eol_xmlsitemap_node_insert(stdClass $node) {
   return;
-/*
+935
   eol_xmlsitemap_cron();
   $types = array(
-    "testimonial",
+    98bc30a918f79ce
   );
   if(!in_array($node->type,$types) || $node->status!=1) return;
-*/
-
-
-/*
+7
   var_dump($node);
   exit;
-object(stdClass)#272 (44) { ["uid"]=> string(1) "1" ["name"]=> string(12) "Elance_Admin" ["type"]=> string(11) "testimonial" ["language"]=> string(2) "en" ["title"]=> string(12) "asfddfsafsda" ["status"]=> int(1) ["promote"]=> int(0) ["sticky"]=> int(0) ["created"]=> int(1365990327) ["revision"]=> int(0) ["comment"]=> string(1) "1" ["menu"]=> array(16) { ["enabled"]=> int(0) ["mlid"]=> int(0) ["module"]=> string(4) "menu" ["hidden"]=> int(0) ["has_children"]=> int(0) ["customized"]=> int(1) ["options"]=> array(0) { } ["expanded"]=> int(0) ["parent_depth_limit"]=> int(8) ["link_title"]=> string(0) "" ["description"]=> string(0) "" ["parent"]=> string(11) "main-menu:0" ["weight"]=> string(1) "0" ["language"]=> string(2) "en" ["plid"]=> string(1) "0" ["menu_name"]=> string(9) "main-menu" } ["path"]=> array(5) { ["alias"]=> string(0) "" ["pid"]=> NULL ["source"]=> NULL ["language"]=> string(3) "und" ["pathauto"]=> int(1) } ["nid"]=> string(4) "4014" ["vid"]=> string(4) "5505" ["changed"]=> int(1365990327) ["additional_settings__active_tab"]=> string(9) "edit-menu" ["log"]=> string(0) "" ["date"]=> string(0) "" ["submit"]=> string(4) "Save" ["preview"]=> string(7) "Preview" ["form_build_id"]=> string(48) "form-bl19KSqQlhYJiyQ6ivPsQ9UYZSoUKuHNdZA2kdjq_ao" ["form_token"]=> string(43) "2QtwfCqUbHw-XO9X973gE_PN6xiYa_qf3eaxkSFeYQE" ["form_id"]=> string(21) "testimonial_node_form" ["page_title"]=> string(0) "" ["xmlsitemap"]=> array(6) { ["status"]=> string(1) "1" ["status_default"]=> string(1) "1" ["status_override"]=> int(0) ["priority"]=> string(3) "0.5" ["priority_default"]=> string(3) "0.5" ["priority_override"]=> int(0) } ["op"]=> string(4) "Save" ["body"]=> array(1) { ["en"]=> array(1) { [0]=> array(3) { ["summary"]=> string(0) "" ["value"]=> string(12) "afsdfsdaafsd" ["format"]=> string(13) "documentation" } } } ["field_image"]=> array(1) { ["en"]=> array(0) { } } ["field_section"]=> array(1) { ["en"]=> array(0) { } } ["field_video_url"]=> array(1) { ["und"]=> array(0) { } } ["field_call_out"]=> array(1) { ["und"]=> array(0) { } } ["field_country_code"]=> array(1) { ["und"]=> array(0) { } } ["field_contractor_title"]=> array(1) { ["und"]=> array(0) { } } ["field_business_url"]=> array(1) { ["und"]=> array(0) { } } ["field_headline"]=> array(1) { ["und"]=> array(0) { } } ["field_video_thumbnail"]=> array(1) { ["und"]=> array(0) { } } ["field_weight"]=> array(1) { ["und"]=> array(0) { } } ["field_customer_type"]=> array(1) { ["und"]=> array(0) { } } ["validated"]=> bool(true) ["is_new"]=> bool(true) ["timestamp"]=> int(1365990327) ["tnid"]=> int(0) ["translate"]=> int(0) } 
-*/
+5fd7813d2195302b4015 d961 8 76e2
+5fd7 13d219530 b40 52d961e877 e2
+5fd7813 2195302b40152d 61e8776e2
+ fd7813d219 302b40152d961 8776e2
+5fd7813 2195302b4 152d 61e8776e2
+5 d7813d2195 02b40152d961e8 76e2
+5fd7813 219530 b40152d961e87 6e2
+5f 7813d2195302 40152d 61e8776e2
+5fd 813d2195302b401 2d961e8776e2
+5 d7813d 195302b40152d 61e8776e2 5fd 813d219530 b40152d96 e 776e2
+5fd7813 219530 b40152d961 8776e2 5fd7813d2195 02b40152d 61e877 e2
+5fd7813d2 95302b 0152d961e8776e2
+5f 7813d2 95302b40152d961e 776e2
+ fd7813d219530 b40152d961 8776e2
+5fd7813
 
   $doc = new DOMDocument();
-  $file = "../html/sitemapStatic.xml";
+  5794f d d1de2ce7c30fbd23c34c4d
+1d5794
   if (!file_exists($file)) {
     $file = fopen($file, 'w') or die("can't open file");
+a
     fclose($file);
   }
-  $doc->load( $file, LIBXML_NOBLANKS);
+  bfbc73755fc a3df94 51d72198bc3
+5fbfbc
   $doc->formatOutput = true;
   $root = $doc->documentElement;
-  $url = $doc->createElement("url");
+  c09d c d7b1c77278d506158158dfd
+7cc0
+
   $nid = $doc->createAttribute("nid");
-  $nid->value = $node->nid;
+  dc399cee385 0 f60948cc4e70
   $url->appendChild($nid);
   $loc = $doc->createElement("loc","https://".$_SERVER['HTTP_HOST']."/q/node/".$node->nid);
-  $url->appendChild($loc);
+  b1caaf116216b9a0429ec97da
   $priority = $doc->createElement("priority",$node->xmlsitemap["priority"]);
   $url->appendChild($priority);
-
+a
 /*
-
-
-
 // Create and add href to new link element
-$href = $doc->createElement("href","www.anysite.com");
+75aa0 5 0509df97d59d9e8f4e8989c0
+75aa09530509df97d59d9e
 $link->appendChild($href);
 */
-  $root->appendChild($url);
+  ec191d2c8af5aa19e97d5c3525
   $doc->save($file);
-
 }
-function eol_xmlsitemap_node_update(stdClass $node) {
+6471dc4c d2cca6871d5ce6fa4b4b77c
+6471dc4c2d2 ca6871 5c
 
-}
+
+b1
 function eol_xmlsitemap_node_delete(stdClass $node) {
-
-}
 
 
