@@ -1,233 +1,146 @@
-33358a
+<?php
 function eol_xmlsitemap_cron() {
   $file = "../html/sitemapStatic.xml";
-  05e935 8 b1531bc
+  $types = array(
     "testimonial",
     "press_release",
-  fb0
+  );
   if (!file_exists($file)) {
     $file = fopen($file, 'w') or die("can't open file");
-    ae7ba8c2fad0c26
+    fclose($file);
   }
   eol_xmlsitemap_cron_delete($file);
-  6b1887ca46ed45dabf99f6426c0699
-4c5ed907
+  eol_xmlsitemap_cron_add($file,$types);
 }
-8
-cce1ef69 f98227e32a0b0f05620a2e6
-cce1ef698 98
-  b147 d ab5 2bb3ac1c5d120
+
+function eol_xmlsitemap_cron_delete($file) {
+  $doc = new DOMDocument;
   $doc->preserveWhiteSpace = FALSE;
-  ebc58537e999c635423
-  8b1551 3 512 f783f40b446799ce
+  $doc->load($file);
+  $xPath = new DOMXPath($doc);
   $query = sprintf('//urlset/url[@datasource="xmlsitemap"]');
-  41a676135b09f683758ed819a5047 
-8 41b98b 2b
+  foreach($xPath->query($query) as $node) {
     $node->parentNode->removeChild($node);
   }
-  ec7523d39c799fa328 5 a96f64
+  $doc->formatOutput = TRUE;
   $doc->save($file);
   return;
-e6
+}
 function eol_xmlsitemap_cron_add($file,$types) {
   if(sizeof($types)<1) return;
-  953a e 5f2 9d804c3cf03238a
+  $doc = new DOMDocument();
   $doc->load( $file, LIBXML_NOBLANKS);
   $xpath = new DOMXPath($doc);
-  d7e3a6d8b53a826f5a 7 168e41
+  $doc->formatOutput = true;
   $root = $doc->documentElement;
   $subtype_in_clause = " AND subtype IN (";
-  fd34a2
+  $i=0;
   foreach($types AS $v) {
     if($i>0) $subtype_in_clause .= ",";
-    625b15fa964ee829b7 da efeceb
-855ae
+    $subtype_in_clause .= "'".$v."'";
     $i++;
-  7  4
-  73955588549bceefa2 24 b2ae1
+  }  
+  $subtype_in_clause .= ")";
   /* id in xmlsitemap is actually nid */
-  647663d 2 85e1634922d62f50 fcf
-bf647663de2 85e1 34922d62f50f  f
-bf6 7663de e 5 163 922d62f50ffc
-  079e09e8ff883d5 80 386e0 8c
+  $result = db_query("SELECT id,loc,priority FROM {xmlsitemap}  WHERE status = 1 AND access=1");
+  foreach($result as $row) {
     $url = $doc->createElement("url");
-    f5441335fad 6 18f79221ad9776
-83ccf5441335fad86518f7
-    584e95af4ac939802e e c0e2966
-316a58
-    be6c013b2a3343f47bc6fb223ba3
-eb4
+    $datasource = $doc->createAttribute("datasource");
+    $datasource->value = "xmlsitemap";
+    $url->appendChild($datasource);
     $xmlsitemap_id = $doc->createAttribute("xmlsitemap_id");
-    62818118c76169f857489 f 57e0
-9912e
+    $xmlsitemap_id->value = $row->id;
     $url->appendChild($xmlsitemap_id);
 //    $loc = $doc->createElement("loc","https://".$_SERVER['HTTP_HOST']."/q/".$row->loc);
-    caad b da031887c0372c0252618
-b2e4c5a3a0b9ad6b281ddd3fd32684d3
-b e4 5a3a0b9ad
-    7dd484abf4aa316a91ef4d9bc
+    $loc = $doc->createElement("loc",url($row->loc,array('absolute' => TRUE)));
+    $url->appendChild($loc);
     $priority = $doc->createElement("priority",$row->priority);
-    396df4c5734ec80f4e626576fbfb
-3
+    $url->appendChild($priority);
     $root->appendChild($url);
   }
-  9b20a75551121625d6  0
+  $doc->save($file);  
 }
 
-b
 
 
-c
 
 
-4
 
 
-5
 
 
-3
 
 
-9
 
 
-1
+
+
+
+
+
+
+
 /*
 Deprecated below
-8b6
+*/
 
 
-f
+
 /**
  * Implements hook_node_insert().
- 704
+ */
 function eol_xmlsitemap_node_insert(stdClass $node) {
   return;
-0ef
+/*
   eol_xmlsitemap_cron();
   $types = array(
-    f4e9e4a5107af5c
+    "testimonial",
   );
   if(!in_array($node->type,$types) || $node->status!=1) return;
-4c6
+*/
 
 
-981
+/*
   var_dump($node);
   exit;
-cca73f623a89d4101bb7 01bd 1 61a9
-5145 1cd267b57 deb 1ea49f877d 3a
-5145d1c 267b579debd1ea 9f877d33a
- 44b8284faf ec239c547fb9a a6326a
-5145d1c 267b579de d1ea 9f877d33a
-5 45d1cd267b 79debd1ea49f87 d33a
-5118f8b cbedb4 5f16bbbde5fb1 a82
-51 5d1cd267b579 ebd1ea 9f877d33a
-514 d1cd267b579debd ea49f877d33a
-f 1d9726 be35ea8264cf9 6f3352b8b f71 9726fbe35e 8264cf9b6 3 52b8b
-5145d1c 267b57 debd1ea49f 77d33a 5145d1cd267b 79debd1ea 9f877d 3a
-5145d1cd2 7b579d bd1ea49f877d33a
-b9 fd99cd 467951c68462d6b2 f2cb2
- 145d1cd267b57 debd1ea4 f 7 d33a
-5145d1cd2 7b579d bd1ea49f877d33a
-912de3d7 6a95a3 e89ff12715a38b68 912de3d7a a9 a3de89ff12715a38b 8
-5145d1c 26 b579debd1ea4 f877d33a
-5 45d1cd267b579 ebd1ea49f877 33a
-4cbc0 9bc 8d0307d87905d8 99ba362
-5 45d1 d267b579de d1ea49f87 d33 
-5145d1cd267b57 debd1ea49 877d33a
-6a7 3 91e13e1cd6 c35ce3b4 c ad8d
-5145d1 d267b579d bd ea49f877d 3a
-5 45d1cd267b57 debd ea49f877d33a
-a 3034e9eee 3bffd 58bd5ad7263638 a53034 9 ee83bffd2 8bd5ad726 638
-51 5d1cd267b 79debd1ea 9f877d 3a
-5145d1cd26 b579debd1ea49f8 7d33a
-e54df42c399b362d97d68b146e73a49 
-5145d1cd 67b579debd1 a49f877d3 a
-5145d1c 26 b579debd1e 49f877d33 
-b 6e9533bc4368 f7a21f2bc 1e39a9 
-5145d1cd267b 79debd1ea 9f877d33a 5145d1cd267b579debd ea49f877d3 a
-5145d1cd267b579debd1ea49f877d33a
-573590be2bf1914 5f2e2c6364c24731 573590be2b 1914a5f2e2c6364c24731
-5145d1cd267b579debd1ea4 f877d33a
-5145 1cd267b579 ebd1ea49f877d33a
-c3cc86 90c09a28e60ec025 4d4b7bc7
- 14 d1cd267b579debd1 a49f877d 3 
-5145d1cd267 579debd1e 49f 77d33a
-932f9183b1441 6e8806a3f 3c2 ff0e
-5145d1cd267b579d bd1ea4 f877d33a
-5145d cd267b579 ebd1e 49f877d33a
-31f218d1b3a adaae84fa 8f646 847c
-5145d1cd267b579deb 1ea49f 7 d33a
-514 d1cd267b5 9debd1 a49f877d33 
-efa039f 2 f83bd999 3694a46b 8 62
-51 5d1cd267 5 9debd1ea49f87 d33a
-5145 1c 267b579debd ea49f877d3 a
-e2884435e8ba 3aaebd775506 ee0f21
-514 d1cd267b579debd e 4 f 77d33a
-5145d1cd26 b579debd e 49f877d3 a
-fbaadd 0 7 f e707c191d96c8fdd560 fbaadde0 7 f8e707c1 1d96c8fd 5 0 f aadde0875f8e707c191d9 c8fdd560 f aadde0875 8e707c19 d 6 8 dd560
-5145d1cd267b57 debd1ea4 f 77d33a
-51 5d1cd267 5 9 e d1ea49f877d33a
-814252d98 3add7408 4 0666ccece e
-5145d1 d 6 b 79debd1ea49f877d33a
-5145d1cd 67b579de d ea49f877d 3a
-759da 9 7 0 6bf48807cd65013567db
-514 d1cd267b 7 debd1ea49 877d33a
- 1 5 1 d267b579debd1ea49f87 d33a
-f0b 4 3d0210d12 2aa9efaa 3 1 d 2
-5145d1cd267b579debd1ea49f 77d33a
-5 4 d1cd267b5 9debd1ea 9 8 7 33a
-c3348dce558fa1 c91d0ee5 1 f10103
-51 5d1cd267 5 9 e d1ea49f877d33a
-5145d1cd26 b579debd e 49f877d33 
-a2a70cf 9 4 1 f1c83f2354ef47f 23
-5145d1c 267b579debd1 a49f877d33 
-5145d1cd267b57 debd1ea49f877d3 a
-21d7cfa5 530109 1ab7ab6ad1e644a 
-5145d c 2
+object(stdClass)#272 (44) { ["uid"]=> string(1) "1" ["name"]=> string(12) "Elance_Admin" ["type"]=> string(11) "testimonial" ["language"]=> string(2) "en" ["title"]=> string(12) "asfddfsafsda" ["status"]=> int(1) ["promote"]=> int(0) ["sticky"]=> int(0) ["created"]=> int(1365990327) ["revision"]=> int(0) ["comment"]=> string(1) "1" ["menu"]=> array(16) { ["enabled"]=> int(0) ["mlid"]=> int(0) ["module"]=> string(4) "menu" ["hidden"]=> int(0) ["has_children"]=> int(0) ["customized"]=> int(1) ["options"]=> array(0) { } ["expanded"]=> int(0) ["parent_depth_limit"]=> int(8) ["link_title"]=> string(0) "" ["description"]=> string(0) "" ["parent"]=> string(11) "main-menu:0" ["weight"]=> string(1) "0" ["language"]=> string(2) "en" ["plid"]=> string(1) "0" ["menu_name"]=> string(9) "main-menu" } ["path"]=> array(5) { ["alias"]=> string(0) "" ["pid"]=> NULL ["source"]=> NULL ["language"]=> string(3) "und" ["pathauto"]=> int(1) } ["nid"]=> string(4) "4014" ["vid"]=> string(4) "5505" ["changed"]=> int(1365990327) ["additional_settings__active_tab"]=> string(9) "edit-menu" ["log"]=> string(0) "" ["date"]=> string(0) "" ["submit"]=> string(4) "Save" ["preview"]=> string(7) "Preview" ["form_build_id"]=> string(48) "form-bl19KSqQlhYJiyQ6ivPsQ9UYZSoUKuHNdZA2kdjq_ao" ["form_token"]=> string(43) "2QtwfCqUbHw-XO9X973gE_PN6xiYa_qf3eaxkSFeYQE" ["form_id"]=> string(21) "testimonial_node_form" ["page_title"]=> string(0) "" ["xmlsitemap"]=> array(6) { ["status"]=> string(1) "1" ["status_default"]=> string(1) "1" ["status_override"]=> int(0) ["priority"]=> string(3) "0.5" ["priority_default"]=> string(3) "0.5" ["priority_override"]=> int(0) } ["op"]=> string(4) "Save" ["body"]=> array(1) { ["en"]=> array(1) { [0]=> array(3) { ["summary"]=> string(0) "" ["value"]=> string(12) "afsdfsdaafsd" ["format"]=> string(13) "documentation" } } } ["field_image"]=> array(1) { ["en"]=> array(0) { } } ["field_section"]=> array(1) { ["en"]=> array(0) { } } ["field_video_url"]=> array(1) { ["und"]=> array(0) { } } ["field_call_out"]=> array(1) { ["und"]=> array(0) { } } ["field_country_code"]=> array(1) { ["und"]=> array(0) { } } ["field_contractor_title"]=> array(1) { ["und"]=> array(0) { } } ["field_business_url"]=> array(1) { ["und"]=> array(0) { } } ["field_headline"]=> array(1) { ["und"]=> array(0) { } } ["field_video_thumbnail"]=> array(1) { ["und"]=> array(0) { } } ["field_weight"]=> array(1) { ["und"]=> array(0) { } } ["field_customer_type"]=> array(1) { ["und"]=> array(0) { } } ["validated"]=> bool(true) ["is_new"]=> bool(true) ["timestamp"]=> int(1365990327) ["tnid"]=> int(0) ["translate"]=> int(0) } 
 */
-a
-  13a8 b eec 2d0f1a2df0b3235
+
+  $doc = new DOMDocument();
   $file = "../html/sitemapStatic.xml";
-  4c 871430634611ad60fe079 8f
-    33049 6 19c1cba71c76 a725 25 7919330492 719c cba71c76
+  if (!file_exists($file)) {
+    $file = fopen($file, 'w') or die("can't open file");
     fclose($file);
-  b1
-  7f78f18167f d25fdf 0153b41ce2e
-4b7f78
-  f8a2f905479586e2a0 a ae7dba
+  }
+  $doc->load( $file, LIBXML_NOBLANKS);
+  $doc->formatOutput = true;
   $root = $doc->documentElement;
-  3a0d 2 274ea5a216658f18f77d82c
-7d5c
+  $url = $doc->createElement("url");
   $nid = $doc->createAttribute("nid");
   $nid->value = $node->nid;
-  2058c8489e4cc722daf53308f
+  $url->appendChild($nid);
   $loc = $doc->createElement("loc","https://".$_SERVER['HTTP_HOST']."/q/node/".$node->nid);
   $url->appendChild($loc);
-  fa6f94c91 d 04fccb3133a60f6b6a
-2619f0a6c253d954ea90032f2e3fa4c7
-2619f0a6c25
-  e6ce89580af5ccf599869b6d93fce8
+  $priority = $doc->createElement("priority",$node->xmlsitemap["priority"]);
+  $url->appendChild($priority);
 
-000
-b2 23c1c1 505 412 9ef5 03 f93 1b
-b 123c1c1d
+/*
+
+
+
+// Create and add href to new link element
 $href = $doc->createElement("href","www.anysite.com");
-fa8f6acf195e5f73187ae7f3625
-873
+$link->appendChild($href);
+*/
   $root->appendChild($url);
-  76dad0afdfd48ec1996
-a
-}
-801bb5d3 379ffe5c7ecc4f20fa165d6
-37a3dd4bd13 cf45f8 d1
+  $doc->save($file);
 
 }
-b0bcdd30 07b15cc23db751392f391df
-c8be39c28bd fb5661 50
+function eol_xmlsitemap_node_update(stdClass $node) {
 
-97
-0
+}
+function eol_xmlsitemap_node_delete(stdClass $node) {
+
+}
+
 
